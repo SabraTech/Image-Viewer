@@ -10,6 +10,7 @@ class QActionGroup;
 class QLabel;
 class QScrollArea;
 class QScrollBar;
+//class QPushButton;
 
 class MainWindow : public QMainWindow
 {
@@ -48,11 +49,14 @@ private:
     QImage image;
     QLabel *imageLabel;
     QScrollArea *scrollArea;
+    //QPushButton btn_rotateLeft;
+    //QPushButton btn_rotateRight;
 
     QMenu *fileMenu;
     QMenu *editeMenu;
     QMenu *viewMenu;
-    QActionGroup *alignmentGroup;
+    QMenu *helpMenu;
+
     QAction *openAction;
     QAction *saveAction;
     QAction *closeAction;
