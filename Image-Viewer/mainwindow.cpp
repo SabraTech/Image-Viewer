@@ -26,6 +26,7 @@ bool MainWindow::openFile(const QString &fileName){
   QImageReader reader(fileName);
   reader.setAutoTransform(true);
   const QImage newImage = reader.read();
+  originImage = reader.read();
   if(newImage.isNull()){
     QMessageBox::information(this.QGuiApplication::applicationDisplayName(),tr("Cannot Load %1: %2").arg(QDir::tonativeSeparators(fileName), reader.errorString()));
 
@@ -78,7 +79,7 @@ void MainWindow::redo(){
 }
 
 void MainWindow::reset(){
-
+  setImage(originImage);
 }
 
 void MainWindow::crop(){
@@ -202,11 +203,4 @@ void MainWindow::scaleImage(double factor){
 
 void MainWindow::adjustScrollBar(QScrollBar *scrollBar, double factor){
   scrollBar->setValue(int(factor * scrollBar->value() + ((factor - 1) * scrollBar->pageStep()/2)));
-}
-
-
-
-MainWindow::~MainWindow()
-{
-    delete ui;
 }

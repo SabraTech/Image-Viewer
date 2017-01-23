@@ -47,6 +47,7 @@ private:
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
 
     QImage image;
+    QImage originImage;
     QLabel *imageLabel;
     QScrollArea *scrollArea;
     //QPushButton btn_rotateLeft;
