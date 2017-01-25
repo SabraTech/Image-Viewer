@@ -18,25 +18,24 @@ class MainWindow : public QMainWindow
 
   public:
       MainWindow();
+      bool loadFile(const QString &);
 
   private slots:
-      void Open();
-      void Save();
-      void Close();
-      void Undo();
-      void Redo();
-      void Reset();
-      void Crop();
-      void RotateLeft();
-      void RotateRight();
-      void ZoomIn();
-      void ZoomOut();
-      void FitScreen();
+      void open();
+      void saveAs();
+      void undo();
+      void redo();
+      void reset();
+      void crop();
+      void rotateLeft();
+      void rotateRight();
+      void zoomIn();
+      void zoomOut();
+      void fitScreen();
+      void about();
 
 
-private:
-    Ui::MainWindow *ui;
-
+private:  
     void createMenus();
     void createActions();
     void updateActions();
@@ -50,6 +49,7 @@ private:
     QImage originImage;
     QLabel *imageLabel;
     QScrollArea *scrollArea;
+    double scaleFactor;
     //QPushButton btn_rotateLeft;
     //QPushButton btn_rotateRight;
 
@@ -73,9 +73,9 @@ private:
 
 protected:
 
-#ifndef QT_NO_CONTEXTMENU
-    void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
-#endif // QT_NO_CONTEXTMENU
+//#ifndef QT_NO_CONTEXTMENU
+    //void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
+//#endif // QT_NO_CONTEXTMENU
 
 };
 
