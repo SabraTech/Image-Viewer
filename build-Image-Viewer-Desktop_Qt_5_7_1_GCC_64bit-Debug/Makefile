@@ -49,9 +49,11 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = ../Image-Viewer/main.cpp \
-		../Image-Viewer/mainwindow.cpp moc_mainwindow.cpp
+		../Image-Viewer/mainwindow.cpp \
+		../Image-Viewer/commands.cpp moc_mainwindow.cpp
 OBJECTS       = main.o \
 		mainwindow.o \
+		commands.o \
 		moc_mainwindow.o
 DIST          = /opt/Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		/opt/Qt/5.7/gcc_64/mkspecs/common/unix.conf \
@@ -207,8 +209,10 @@ DIST          = /opt/Qt/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		/opt/Qt/5.7/gcc_64/mkspecs/features/exceptions.prf \
 		/opt/Qt/5.7/gcc_64/mkspecs/features/yacc.prf \
 		/opt/Qt/5.7/gcc_64/mkspecs/features/lex.prf \
-		../Image-Viewer/Image-Viewer.pro ../Image-Viewer/mainwindow.h ../Image-Viewer/main.cpp \
-		../Image-Viewer/mainwindow.cpp
+		../Image-Viewer/Image-Viewer.pro ../Image-Viewer/mainwindow.h \
+		../Image-Viewer/commands.h ../Image-Viewer/main.cpp \
+		../Image-Viewer/mainwindow.cpp \
+		../Image-Viewer/commands.cpp
 QMAKE_TARGET  = Image-Viewer
 DESTDIR       = 
 TARGET        = Image-Viewer
@@ -553,8 +557,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents ../Image-Viewer/mainwindow.h $(DISTDIR)/
-	$(COPY_FILE) --parents ../Image-Viewer/main.cpp ../Image-Viewer/mainwindow.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents ../Image-Viewer/mainwindow.h ../Image-Viewer/commands.h $(DISTDIR)/
+	$(COPY_FILE) --parents ../Image-Viewer/main.cpp ../Image-Viewer/mainwindow.cpp ../Image-Viewer/commands.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents ../Image-Viewer/mainwindow.ui $(DISTDIR)/
 
 
@@ -685,6 +689,26 @@ moc_mainwindow.cpp: /opt/Qt/5.7/gcc_64/include/QtWidgets/QMainWindow \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
 		/opt/Qt/5.7/gcc_64/include/QtGui/qicon.h \
 		/opt/Qt/5.7/gcc_64/include/QtGui/QImage \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/QUndoStack \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qundostack.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/QUndoView \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qundoview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
 		../Image-Viewer/mainwindow.h \
 		/opt/Qt/5.7/gcc_64/bin/moc
 	/opt/Qt/5.7/gcc_64/bin/moc $(DEFINES) -I/opt/Qt/5.7/gcc_64/mkspecs/linux-g++ -I/home/ziad/Image-Viewer/Image-Viewer -I/opt/Qt/5.7/gcc_64/include -I/opt/Qt/5.7/gcc_64/include/QtPrintSupport -I/opt/Qt/5.7/gcc_64/include/QtWidgets -I/opt/Qt/5.7/gcc_64/include/QtGui -I/opt/Qt/5.7/gcc_64/include/QtCore -I. -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include ../Image-Viewer/mainwindow.h -o moc_mainwindow.cpp
@@ -810,6 +834,26 @@ main.o: ../Image-Viewer/main.cpp ../Image-Viewer/mainwindow.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
 		/opt/Qt/5.7/gcc_64/include/QtGui/qicon.h \
 		/opt/Qt/5.7/gcc_64/include/QtGui/QImage \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/QUndoStack \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qundostack.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/QUndoView \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qundoview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/QApplication \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qapplication.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qcoreapplication.h \
@@ -924,6 +968,27 @@ mainwindow.o: ../Image-Viewer/mainwindow.cpp ../Image-Viewer/mainwindow.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
 		/opt/Qt/5.7/gcc_64/include/QtGui/qicon.h \
 		/opt/Qt/5.7/gcc_64/include/QtGui/QImage \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/QUndoStack \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qundostack.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/QUndoView \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qundoview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
+		../Image-Viewer/commands.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/QtWidgets \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/QtWidgetsDepends \
 		/opt/Qt/5.7/gcc_64/include/QtCore/QtCore \
@@ -959,10 +1024,8 @@ mainwindow.o: ../Image-Viewer/mainwindow.cpp ../Image-Viewer/mainwindow.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qtemporarydir.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/QScopedPointer \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qtemporaryfile.h \
-		/opt/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qabstractproxymodel.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qidentityproxymodel.h \
-		/opt/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qsortfilterproxymodel.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qstringlistmodel.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qjsonarray.h \
@@ -1027,7 +1090,6 @@ mainwindow.o: ../Image-Viewer/mainwindow.cpp ../Image-Viewer/mainwindow.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qlinkedlist.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qmessageauthenticationcode.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qqueue.h \
-		/opt/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qscopedvaluerollback.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qstack.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/qtextboundaryfinder.h \
@@ -1129,7 +1191,6 @@ mainwindow.o: ../Image-Viewer/mainwindow.cpp ../Image-Viewer/mainwindow.h \
 		/opt/Qt/5.7/gcc_64/include/QtGui/qtextlist.h \
 		/opt/Qt/5.7/gcc_64/include/QtGui/qtexttable.h \
 		/opt/Qt/5.7/gcc_64/include/QtGui/qdesktopservices.h \
-		/opt/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
 		/opt/Qt/5.7/gcc_64/include/QtGui/qtguiversion.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qaccessiblewidget.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qcolordialog.h \
@@ -1140,7 +1201,6 @@ mainwindow.o: ../Image-Viewer/mainwindow.cpp ../Image-Viewer/mainwindow.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qfontdialog.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qinputdialog.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qlineedit.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qmessagebox.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qprogressdialog.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qwizard.h \
@@ -1161,16 +1221,6 @@ mainwindow.o: ../Image-Viewer/mainwindow.cpp ../Image-Viewer/mainwindow.h \
 		/opt/Qt/5.7/gcc_64/include/QtGui/QMatrix4x4 \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qgraphicsview.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qscrollarea.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qcolumnview.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qdatawidgetmapper.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qdirmodel.h \
@@ -1178,7 +1228,6 @@ mainwindow.o: ../Image-Viewer/mainwindow.cpp ../Image-Viewer/mainwindow.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qheaderview.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qitemdelegate.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qitemeditorfactory.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qlistwidget.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtableview.h \
@@ -1224,8 +1273,6 @@ mainwindow.o: ../Image-Viewer/mainwindow.cpp ../Image-Viewer/mainwindow.h \
 		/opt/Qt/5.7/gcc_64/include/QtCore/QVariant \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qsystemtrayicon.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qundogroup.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qundostack.h \
-		/opt/Qt/5.7/gcc_64/include/QtWidgets/qundoview.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractbutton.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qbuttongroup.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qcalendarwidget.h \
@@ -1264,6 +1311,131 @@ mainwindow.o: ../Image-Viewer/mainwindow.cpp ../Image-Viewer/mainwindow.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtoolbutton.h \
 		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtwidgetsversion.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o mainwindow.o ../Image-Viewer/mainwindow.cpp
+
+commands.o: ../Image-Viewer/commands.cpp ../Image-Viewer/commands.h \
+		../Image-Viewer/mainwindow.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/QMainWindow \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qmainwindow.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qwidget.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qwindowdefs.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qglobal.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qconfig.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qfeatures.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qsystemdetection.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qprocessordetection.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qcompilerdetection.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qtypeinfo.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qtypetraits.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qisenum.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qsysinfo.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qlogging.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qflags.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qatomic.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qbasicatomic.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qgenericatomic.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qatomic_cxx11.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qatomic_msvc.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qglobalstatic.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qmutex.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qnumeric.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qversiontagging.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qobjectdefs.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qnamespace.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qwindowdefs_win.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qobject.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qstring.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qchar.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qbytearray.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qrefcount.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qarraydata.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qstringbuilder.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qlist.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qalgorithms.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qiterator.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qhashfunctions.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qpair.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qbytearraylist.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qstringlist.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qregexp.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qstringmatcher.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qcoreevent.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qscopedpointer.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qmetatype.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qvarlengtharray.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qcontainerfwd.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qobject_impl.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qmargins.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qpaintdevice.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qrect.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qsize.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qpoint.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qpalette.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qcolor.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qrgb.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qrgba64.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qbrush.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qvector.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qmatrix.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qpolygon.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qregion.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qdatastream.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qiodevice.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qline.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qtransform.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qpainterpath.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qimage.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qpixelformat.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qpixmap.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qsharedpointer.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qshareddata.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qhash.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qfont.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qfontmetrics.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qfontinfo.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qsizepolicy.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qcursor.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qkeysequence.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qevent.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qvariant.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qmap.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qdebug.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qtextstream.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qlocale.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qset.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qcontiguouscache.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qurl.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qurlquery.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qfile.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qfiledevice.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qvector2d.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qtouchdevice.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtabwidget.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qicon.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/QImage \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/QUndoStack \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qundostack.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/QUndoView \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qundoview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qlistview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qframe.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qstyleoption.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/opt/Qt/5.7/gcc_64/include/QtGui/qvalidator.h \
+		/opt/Qt/5.7/gcc_64/include/QtCore/qregularexpression.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qslider.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qabstractslider.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qstyle.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qtabbar.h \
+		/opt/Qt/5.7/gcc_64/include/QtWidgets/qrubberband.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o commands.o ../Image-Viewer/commands.cpp
 
 moc_mainwindow.o: moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_mainwindow.o moc_mainwindow.cpp

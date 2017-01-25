@@ -1,8 +1,16 @@
 #include "mainwindow.h"
+#include "commands.h"
+#include <stack>
 #include <QtWidgets>
+#include <stack>
+
+
 
 MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), scaleFactor(1) /*btn_rotateLeft(new QPushButton), btn_rotateRight(new QPushButton)*/
 {
+  //createUndoView();
+  undoStack = new QStack<QImage>();
+  redoStack = new QStack<QImage>();
   imageLabel->setBackgroundRole(QPalette::Base);
   imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
   imageLabel->setScaledContents(true);
@@ -23,9 +31,11 @@ MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), 
 }
 bool MainWindow::loadFile(const QString &fileName)
 {
+
     QImageReader reader(fileName);
     reader.setAutoTransform(true);
     const QImage newImage = reader.read();
+    const QImage originalImage = newImage;
     if (newImage.isNull()) {
         QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
                                  tr("Cannot load %1: %2")
@@ -72,6 +82,8 @@ void MainWindow::open(){
 }
 
 void MainWindow::setImage(const QImage &newImage){
+
+  undoStack->push(newImage);
   image = newImage;
   imageLabel->setPixmap(QPixmap::fromImage(image));
   scaleFactor = 1.0;
@@ -81,6 +93,8 @@ void MainWindow::setImage(const QImage &newImage){
   updateActions();
   if (!fitScreenAction->isChecked())
          imageLabel->adjustSize();
+
+  //  new SetImageCommand(newImage,imageLabel);
 }
 
 bool MainWindow::saveFile(const QString &fileName)
@@ -108,25 +122,61 @@ void MainWindow::saveAs(){
 }
 
 void MainWindow::undo(){
+    if(undoStack->size()<=1)
+           return;
 
+    redoStack->push(image);
+    undoStack->pop();
+    QImage popped= undoStack->pop();
+    setImage(popped);
 }
 
 void MainWindow::redo(){
+    if(redoStack->size()==0)
+           return;
+    QImage popped= redoStack->pop();
+    setImage(popped);
 
 }
 
 void MainWindow::reset(){
-  setImage(originImage);
+    setImage(originalImage);
 }
 
 void MainWindow::crop(){
 
+}
+void MainWindow::rotateAngle(){
+
+    bool ok;
+    double value=0,min=-359,max=359;
+    int decimals = 1;
+    double rotationAngle =   QInputDialog::getDouble(this,
+                                                            tr("Rotation"),
+                                                            tr("Angle:"),
+                                                             value,
+                                                             min,
+                                                             max ,
+                                                             decimals,
+                                                               &ok,
+
+                                                          Qt::WindowFlags());
+
+     if(ok)
+    {
+      QTransform trans;
+      trans.rotate(rotationAngle);
+      image = image.transformed(trans);
+      setImage(image);
+    }
 }
 
 void MainWindow::rotateLeft(){
   QTransform trans;
   trans.rotate(90);
   image = image.transformed(trans);
+  delete redoStack;
+  redoStack= new QStack<QImage>();
   setImage(image);
 }
 
@@ -134,15 +184,20 @@ void MainWindow::rotateRight(){
   QTransform trans;
   trans.rotate(270);
   image = image.transformed(trans);
+  delete redoStack;
+  redoStack= new QStack<QImage>();
   setImage(image);
 }
 
 void MainWindow::zoomIn(){
+    delete redoStack;
+    redoStack= new QStack<QImage>();
 
 }
 
 void MainWindow::zoomOut(){
-
+    delete redoStack;
+    redoStack= new QStack<QImage>();
 }
 
 void MainWindow::fitScreen(){
@@ -195,6 +250,8 @@ void MainWindow::createActions(){
 
   editeMenu->addSeparator();
 
+  rotateAngleAction = editeMenu->addAction(tr("&Rotate By Angle"),this,&MainWindow::rotateAngle);
+
   rotateLeftAction = editeMenu->addAction(tr("&Rotate Left by 90"), this, &MainWindow::rotateLeft);
   rotateLeftAction->setShortcut(tr("Ctrl+L"));
 
@@ -223,7 +280,6 @@ void MainWindow::updateActions(){
     saveAction->setEnabled(!image.isNull());
     zoomInAction->setEnabled(!image.isNull());
     zoomOutAction->setEnabled(!image.isNull());
-  //  normalSizeAction->setEnabled(!image.isNull());
 }
 
 void MainWindow::scaleImage(double factor){
@@ -241,3 +297,19 @@ void MainWindow::scaleImage(double factor){
 void MainWindow::adjustScrollBar(QScrollBar *scrollBar, double factor){
   scrollBar->setValue(int(factor * scrollBar->value() + ((factor - 1) * scrollBar->pageStep()/2)));
 }
+
+
+
+
+
+
+
+
+
+/*void MainWindow::createUndoView()
+{
+    undoView = new QUndoView(undoStack);
+    undoView->setWindowTitle(tr("Command List"));
+    undoView->show();
+    undoView->setAttribute(Qt::WA_QuitOnClose, false);
+}*/

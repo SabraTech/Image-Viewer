@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QImage>
+#include <QUndoStack>
+#include <QUndoView>
 
 class QAction;
 class QMenu;
@@ -10,6 +12,8 @@ class QActionGroup;
 class QLabel;
 class QScrollArea;
 class QScrollBar;
+class QUndoStack;
+class QUndoView;
 //class QPushButton;
 
 class MainWindow : public QMainWindow
@@ -26,12 +30,21 @@ class MainWindow : public QMainWindow
       void undo();
       void redo();
       void reset();
-      void crop();
-      void rotateLeft();
-      void rotateRight();
-      void zoomIn();
-      void zoomOut();
-      void fitScreen();
+
+      //crop
+      void crop();//ur
+
+      //rotation
+      void rotateLeft();//ur
+      void rotateRight();//ur
+      void rotateAngle();//ur
+
+      //zoom
+      void zoomIn();//ur
+      void zoomOut();//ur
+      void fitScreen();//ur
+
+      //about
       void about();
 
 
@@ -46,7 +59,7 @@ private:
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
 
     QImage image;
-    QImage originImage;
+    QImage originalImage;
     QLabel *imageLabel;
     QScrollArea *scrollArea;
     double scaleFactor;
@@ -65,11 +78,15 @@ private:
     QAction *redoAction;
     QAction *resetAction;
     QAction *cropAction;
+    QAction *rotateAngleAction;
     QAction *rotateLeftAction;
     QAction *rotateRightAction;
     QAction *zoomInAction;
     QAction *zoomOutAction;
     QAction *fitScreenAction;
+
+    QStack<QImage> *undoStack ;
+    QStack<QImage> *redoStack ;
 
 protected:
 
