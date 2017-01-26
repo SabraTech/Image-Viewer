@@ -29,6 +29,38 @@ MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), 
   resize(QGuiApplication::primaryScreen()->availableSize() * 3 / 5);
 
 }
+
+// need to review this part again
+// and connect the mouseEvent functions with the actions methods.
+void MainWindow::mousePressEvent(QMouseEvent *event){
+  QGraphicsView::mousePressEvent(event);
+  origin = event->pos();
+  if(!rubberBand){
+    rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+  }
+  rubberBand->setGeometry(QRect(origin, QSize()));
+  rubberBand->show();
+}
+
+void MainWindow::mouseMoveEvent(QMouseEvent *event){
+  QGraphicsView::mouseMoveEvent(event);
+  rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
+}
+
+void MainWindow::mouseReleaseEvent(QMouseEvent *event){
+  QGraphicsView::mouseReleaseEvent(event);
+  rubberBand->hide();
+  // determine selection, for example using QRect::intersects()
+  // and QRect::contains().
+  QRect rect = rubberBand->gemetry().normalized();
+  QImage newImage;
+  newImage = OriginalPix.toImage();
+  QImage copyImage;
+  copyImage = copyImage.copy(rect);
+  setImage(copyImage);
+}
+
+
 bool MainWindow::loadFile(const QString &fileName)
 {
 

@@ -5,6 +5,8 @@
 #include <QImage>
 #include <QUndoStack>
 #include <QUndoView>
+#include <QRect>
+#include <QRubberBand>
 
 class QAction;
 class QMenu;
@@ -48,7 +50,7 @@ class MainWindow : public QMainWindow
       void about();
 
 
-private:  
+private:
     void createMenus();
     void createActions();
     void updateActions();
@@ -58,6 +60,7 @@ private:
     void scaleImage(double factor);
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
 
+    QPoint origin;
     QImage image;
     QImage originalImage;
     QLabel *imageLabel;
@@ -89,6 +92,9 @@ private:
     QStack<QImage> *redoStack ;
 
 protected:
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 //#ifndef QT_NO_CONTEXTMENU
     //void contextMenuEvent(QContextMenuEvent *event) Q_DECL_OVERRIDE;
