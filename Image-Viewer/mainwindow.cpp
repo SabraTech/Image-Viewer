@@ -1,9 +1,7 @@
 #include "mainwindow.h"
-#include "commands.h"
 #include <stack>
 #include <QtWidgets>
 #include <stack>
-
 
 
 MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), scaleFactor(1) /*btn_rotateLeft(new QPushButton), btn_rotateRight(new QPushButton)*/
@@ -26,40 +24,40 @@ MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), 
 
   createActions();
 
-  resize(QGuiApplication::primaryScreen()->availableSize() * 3 / 5);
-
+  resize(QGuiApplication::primaryScreen()->availableSize());
+  loadFile(tr("Pictures/Webcam/2016-09-16-204031.jpg"));
 }
 
-// need to review this part again
-// and connect the mouseEvent functions with the actions methods.
 void MainWindow::mousePressEvent(QMouseEvent *event){
-  QGraphicsView::mousePressEvent(event);
+  event->accept();
   origin = event->pos();
-  if(!rubberBand){
-    rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+  if(rubberBand){
+      rubberBand ->close();
+      rubberBand = NULL;
   }
-  rubberBand->setGeometry(QRect(origin, QSize()));
-  rubberBand->show();
+  else{
+    rubberBand = new QRubberBand(QRubberBand::Rectangle, this);
+    rubberBand->setGeometry(QRect(origin, QSize()));
+    rubberBand->show();
+  }
+
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event){
-  QGraphicsView::mouseMoveEvent(event);
-  rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
+  event->accept();
+  if(rubberBand){
+     rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
+     rubberBand->show();
+   }
+
 }
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event){
-  QGraphicsView::mouseReleaseEvent(event);
-  rubberBand->hide();
-  // determine selection, for example using QRect::intersects()
-  // and QRect::contains().
-  QRect rect = rubberBand->gemetry().normalized();
-  QImage newImage;
-  newImage = OriginalPix.toImage();
-  QImage copyImage;
-  copyImage = copyImage.copy(rect);
-  setImage(copyImage);
+  event->accept();
+  if(rubberBand){
+      rubberBand->show();
+   }
 }
-
 
 bool MainWindow::loadFile(const QString &fileName)
 {
@@ -110,6 +108,8 @@ void MainWindow::open(){
     QFileDialog dialog(this, tr("Open File"));
     initializeImageFileDialog(dialog, QFileDialog::AcceptOpen);
     while (dialog.exec() == QDialog::Accepted && !loadFile(dialog.selectedFiles().first())) {}
+
+
 
 }
 
@@ -176,7 +176,17 @@ void MainWindow::reset(){
 }
 
 void MainWindow::crop(){
+    if(rubberBand){
+       QImage copy ;
+       double width = rubberBand->width();
+       double height = rubberBand->height();
+       int x = origin.rx();
+       int y = origin.ry();
+       copy = image.copy( x, y, width, height);
+       rubberBand->close();
+        setImage(copy);
 
+    }
 }
 void MainWindow::rotateAngle(){
 
@@ -331,17 +341,3 @@ void MainWindow::adjustScrollBar(QScrollBar *scrollBar, double factor){
 }
 
 
-
-
-
-
-
-
-
-/*void MainWindow::createUndoView()
-{
-    undoView = new QUndoView(undoStack);
-    undoView->setWindowTitle(tr("Command List"));
-    undoView->show();
-    undoView->setAttribute(Qt::WA_QuitOnClose, false);
-}*/

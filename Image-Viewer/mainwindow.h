@@ -34,17 +34,17 @@ class MainWindow : public QMainWindow
       void reset();
 
       //crop
-      void crop();//ur
+      void crop();
 
       //rotation
-      void rotateLeft();//ur
-      void rotateRight();//ur
-      void rotateAngle();//ur
+      void rotateLeft();
+      void rotateRight();
+      void rotateAngle();
 
       //zoom
-      void zoomIn();//ur
-      void zoomOut();//ur
-      void fitScreen();//ur
+      void zoomIn();
+      void zoomOut();
+      void fitScreen();
 
       //about
       void about();
@@ -66,6 +66,10 @@ private:
     QLabel *imageLabel;
     QScrollArea *scrollArea;
     double scaleFactor;
+    bool click ;
+
+    QRubberBand *rubberBand = NULL;
+    QPoint myPoint;
     //QPushButton btn_rotateLeft;
     //QPushButton btn_rotateRight;
 
