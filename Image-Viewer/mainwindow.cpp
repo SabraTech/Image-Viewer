@@ -22,7 +22,7 @@ MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), 
   //imageLabel->setFrameRect(QRect(0,100,5000,100));
 
   imageLabel->setMaximumHeight(1050);
-  imageLabel->setMaximumWidth(10000);
+  imageLabel->setMaximumWidth(2000);
   imageLabel->setMinimumHeight(100);
   imageLabel->setMinimumWidth(1000);
 
@@ -38,8 +38,6 @@ MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), 
   setCentralWidget(scrollArea);
   createActions();
   resize(QGuiApplication::primaryScreen()->availableSize());
-  //debug
-  loadFile(tr("Pictures/Webcam/2016-09-16-204031.jpg"));
 
 
 }
