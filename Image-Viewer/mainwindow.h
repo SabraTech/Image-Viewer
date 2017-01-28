@@ -7,7 +7,7 @@
 #include <QUndoView>
 #include <QRect>
 #include <QRubberBand>
-
+#include <QPushButton>
 class QAction;
 class QMenu;
 class QActionGroup;
@@ -35,7 +35,7 @@ class MainWindow : public QMainWindow
 
       //crop
       void crop();
-
+      void cropHelper();
       //rotation
       void rotateLeft();
       void rotateRight();
@@ -45,6 +45,8 @@ class MainWindow : public QMainWindow
       void zoomIn();
       void zoomOut();
       void fitScreen();
+      void zoomInHelper();
+      void zoomOutHelper();
 
       //about
       void about();
@@ -59,19 +61,24 @@ private:
     void setImage(const QImage &newImage);
     void scaleImage(double factor);
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
+    void setImageLabel(int height,int width);
 
     QPoint origin;
+    QPoint endOrigin;
     QImage image;
     QImage originalImage;
     QLabel *imageLabel;
     QScrollArea *scrollArea;
     double scaleFactor;
     bool click ;
+    bool isZoomedIn;
+    bool isZoomedOut;
+    bool isCrop;
 
     QRubberBand *rubberBand = NULL;
     QPoint myPoint;
-    //QPushButton btn_rotateLeft;
-    //QPushButton btn_rotateRight;
+    QPushButton btn_rotateLeft;
+    QPushButton btn_rotateRight;
 
     QMenu *fileMenu;
     QMenu *editeMenu;
@@ -92,8 +99,10 @@ private:
     QAction *zoomOutAction;
     QAction *fitScreenAction;
 
-    QStack<QImage> *undoStack ;
+    QStack<QImage> *undoStack ;//undostack ---> pair {image,labelsize}
     QStack<QImage> *redoStack ;
+    QStack<QSize> *undoLabelSizes;
+    QStack<QSize>  *redoLabelSizes;
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;

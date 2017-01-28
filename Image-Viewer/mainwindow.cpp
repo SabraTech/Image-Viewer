@@ -4,17 +4,21 @@
 #include <stack>
 
 
+//---------------constructor-------------------------------------------------------
 MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), scaleFactor(1) /*btn_rotateLeft(new QPushButton), btn_rotateRight(new QPushButton)*/
 {
-  //createUndoView();
+  isZoomedIn = false;
+  isZoomedOut = false;
+  isCrop = false;
+  undoLabelSizes = new QStack<QSize>();
+  redoLabelSizes = new QStack<QSize>();
   undoStack = new QStack<QImage>();
   redoStack = new QStack<QImage>();
   imageLabel->setBackgroundRole(QPalette::Base);
   imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
   imageLabel->setScaledContents(true);
+    scaleFactor = 1.0;
 
-  //btn_rotateLeft->setText(tr("Left 90"));
-  //btn_rotateRight->setText(tr("Right 90"));
 
 
   scrollArea->setBackgroundRole(QPalette::Dark);
@@ -25,9 +29,11 @@ MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), 
   createActions();
 
   resize(QGuiApplication::primaryScreen()->availableSize());
+  //debug
   loadFile(tr("Pictures/Webcam/2016-09-16-204031.jpg"));
 }
 
+//-mouse select press,move,release-------------------------------------------------
 void MainWindow::mousePressEvent(QMouseEvent *event){
   event->accept();
   origin = event->pos();
@@ -45,6 +51,7 @@ void MainWindow::mousePressEvent(QMouseEvent *event){
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event){
   event->accept();
+  endOrigin = event->pos();
   if(rubberBand){
      rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
      rubberBand->show();
@@ -57,15 +64,25 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event){
   if(rubberBand){
       rubberBand->show();
    }
+  if(isZoomedIn){
+      zoomInHelper();
+      isZoomedIn = false;
+  }
+  else if (isCrop){
+      cropHelper();
+      isCrop = false;
+  }
 }
 
+
+//--------load picture (open) using file dialog-----------------------------------
 bool MainWindow::loadFile(const QString &fileName)
 {
 
     QImageReader reader(fileName);
     reader.setAutoTransform(true);
     const QImage newImage = reader.read();
-    const QImage originalImage = newImage;
+    originalImage = newImage;
     if (newImage.isNull()) {
         QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
                                  tr("Cannot load %1: %2")
@@ -83,30 +100,56 @@ bool MainWindow::loadFile(const QString &fileName)
     return true;
 }
 
+
+
+static void initializeImageFileDialog(QFileDialog &dialog, QFileDialog::AcceptMode acceptMode)
+{
+    static bool firstDialog = true;
+
+    if (firstDialog) {
+        firstDialog = false;
+        const QStringList picturesLocations = QStandardPaths::standardLocations(QStandardPaths::PicturesLocation);
+        dialog.setDirectory(picturesLocations.isEmpty() ? QDir::currentPath() : picturesLocations.last());
+    }
+
+    QStringList mimeTypeFilters;
+    const QByteArrayList supportedMimeTypes = acceptMode == QFileDialog::AcceptOpen
+        ? QImageReader::supportedMimeTypes() : QImageWriter::supportedMimeTypes();
+    foreach (const QByteArray &mimeTypeName, supportedMimeTypes)
+        mimeTypeFilters.append(mimeTypeName);
+    mimeTypeFilters.sort();
+    dialog.setMimeTypeFilters(mimeTypeFilters);
+    dialog.selectMimeTypeFilter("image/jpeg");
+    if (acceptMode == QFileDialog::AcceptSave)
+        dialog.setDefaultSuffix("jpg");
+}
 void MainWindow::open(){
-    QFileDialog dialog(this);
-    dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
-    dialog.setViewMode(QFileDialog::Detail);
-    QString fileName = QFileDialog::getOpenFileName(this,
-       tr("Open Images"), "/Pictures/Webcam/", tr("Image Files (*.png *.jpg *.bmp)"));
-    while (dialog.exec() == QDialog::Accepted && !loadFile(fileName)) {}
+    QFileDialog dialog(this, tr("Open File"));
+    initializeImageFileDialog(dialog, QFileDialog::AcceptOpen);
+    while (dialog.exec() == QDialog::Accepted && !loadFile(dialog.selectedFiles().first())) {}
+
+
+
 }
 
+//-------------setting image-----------------------------------------------------
 void MainWindow::setImage(const QImage &newImage){
 
   undoStack->push(newImage);
   image = newImage;
   imageLabel->setPixmap(QPixmap::fromImage(image));
-  scaleFactor = 1.0;
-
   scrollArea->setVisible(true);
   fitScreenAction->setEnabled(true);
   updateActions();
   if (!fitScreenAction->isChecked())
          imageLabel->adjustSize();
 
-  //  new SetImageCommand(newImage,imageLabel);
 }
+
+
+//-------------saving------------------------------------------------------------
+
+
 
 bool MainWindow::saveFile(const QString &fileName)
 {
@@ -125,16 +168,15 @@ bool MainWindow::saveFile(const QString &fileName)
 
 
 void MainWindow::saveAs(){
-  QFileDialog dialog(this);
-  dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
-  dialog.setViewMode(QFileDialog::Detail);
-  QString fileName = QFileDialog::getOpenFileName(this,
-     tr("Save As Image"), "/Pictures/Webcam/", tr("Image Files (*.png *.jpg *.bmp)"));
+    QFileDialog dialog(this, tr("Save File As"));
+    initializeImageFileDialog(dialog, QFileDialog::AcceptSave);
 
-    while (dialog.exec() == QDialog::Accepted && !saveFile(fileName)) {}
+    while (dialog.exec() == QDialog::Accepted && !saveFile(dialog.selectedFiles().first())) {}
 
 }
 
+
+//-------------undo redo---------------------------------------------------------
 void MainWindow::undo(){
     if(undoStack->size()<=1)
            return;
@@ -152,12 +194,16 @@ void MainWindow::redo(){
     setImage(popped);
 
 }
-
+//-------------reset-------------------------------------------------------------
 void MainWindow::reset(){
     setImage(originalImage);
 }
 
+//-------------crop--------------------------------------------------------------
 void MainWindow::crop(){
+    isCrop = true;
+}
+void MainWindow::cropHelper(){
     if(rubberBand){
        QImage copy ;
        double width = rubberBand->width();
@@ -166,10 +212,11 @@ void MainWindow::crop(){
        int y = origin.ry();
        copy = image.copy( x, y, width, height);
        rubberBand->close();
-        setImage(copy);
+       setImage(copy);
 
     }
 }
+//-------------rotation----------------------------------------------------------
 void MainWindow::rotateAngle(){
 
     bool ok;
@@ -213,31 +260,77 @@ void MainWindow::rotateRight(){
   setImage(image);
 }
 
+//---------------zoom-------------------------------------------------------------
 void MainWindow::zoomIn(){
-    delete redoStack;
-    redoStack= new QStack<QImage>();
-    scaleImage(1.25);
-
+    isZoomedIn = true;
+}
+void MainWindow::zoomOut(){
+    zoomOutHelper();
 }
 
-void MainWindow::zoomOut(){
+void MainWindow::zoomInHelper(){
+    //removing redo stack
     delete redoStack;
     redoStack= new QStack<QImage>();
-    scaleImage(0.75);
+    if(!rubberBand||image.isNull()){
+        return;
+    }
+    float pre_hor_val = scrollArea->horizontalScrollBar()->value();
+    float pre_ver_val = scrollArea->verticalScrollBar()->value();
+
+    scaleImage(1.25);
+    scrollArea->setUpdatesEnabled(true);
+    scrollArea->horizontalScrollBar()->setUpdatesEnabled(true);
+    scrollArea->verticalScrollBar()->setUpdatesEnabled(true);
+
+
+    scrollArea->horizontalScrollBar()->setRange(std::min(origin.rx(),endOrigin.rx())+rubberBand->width()/2,imageLabel->width());
+    scrollArea->horizontalScrollBar()->setValue(pre_hor_val*1.25);
+    scrollArea->verticalScrollBar()->setRange(std::min(origin.ry(),endOrigin.ry())+rubberBand->height()/2,imageLabel->height());
+    scrollArea->verticalScrollBar()->setValue(pre_ver_val*1.25);
+    rubberBand->close();
+    rubberBand = NULL;
+
+
+}
+void MainWindow::zoomOutHelper(){
+    delete redoStack;
+    redoStack= new QStack<QImage>();
+    scaleImage(1/1.25);
+    delete redoStack;
+    redoStack= new QStack<QImage>();
+    if(!rubberBand||image.isNull()){
+        return;
+    }
+    float pre_hor_val = scrollArea->horizontalScrollBar()->value();
+    float pre_ver_val = scrollArea->verticalScrollBar()->value();
+
+    scaleImage(1/1.25);
+    scrollArea->setUpdatesEnabled(true);
+    scrollArea->horizontalScrollBar()->setUpdatesEnabled(true);
+    scrollArea->verticalScrollBar()->setUpdatesEnabled(true);
+
+
+    scrollArea->horizontalScrollBar()->setRange(std::min(origin.rx(),endOrigin.rx())+rubberBand->width()/2,imageLabel->width());
+    scrollArea->horizontalScrollBar()->setValue(pre_hor_val/1.25);
+    scrollArea->verticalScrollBar()->setRange(std::min(origin.ry(),endOrigin.ry())+rubberBand->height()/2,imageLabel->height());
+    scrollArea->verticalScrollBar()->setValue(pre_ver_val/1.25);
+    rubberBand->close();
+    rubberBand = NULL;
 }
 
 void MainWindow::fitScreen(){
   imageLabel->adjustSize();
   scaleFactor = 1.0;
 }
-
+//--------------about--------------------------------------------------------------
 void MainWindow::about(){
   QMessageBox::about(this, tr("About Image-Viewer"),
-    tr("<p> The <b>Image-Viewer</b> Developed by"
+    tr("<p> <b>Image-Viewer</b> is Developed by"
         "<br>"
         "Mohamed Sabra"
-        "<br>"
-        "Ziad Hendawy"
+       "<br>"
+       "Ziad Hendawy"
         "<br>"
         "Ahmed Sallam"
         "<br>"
