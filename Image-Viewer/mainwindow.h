@@ -61,7 +61,7 @@ private:
     void setImage(const QImage &newImage);
     void scaleImage(double factor);
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
-    void setImageLabel(int height,int width);
+    void setImageLabel(QSize);
 
     QPoint origin;
     QPoint endOrigin;
@@ -69,7 +69,10 @@ private:
     QImage originalImage;
     QLabel *imageLabel;
     QScrollArea *scrollArea;
+    QSize originalImageLabelSize;
+
     double scaleFactor;
+    double factorSaved;
     bool click ;
     bool isZoomedIn;
     bool isZoomedOut;
@@ -99,10 +102,9 @@ private:
     QAction *zoomOutAction;
     QAction *fitScreenAction;
 
-    QStack<QImage> *undoStack ;//undostack ---> pair {image,labelsize}
-    QStack<QImage> *redoStack ;
-    QStack<QSize> *undoLabelSizes;
-    QStack<QSize>  *redoLabelSizes;
+    QStack<QPair<QImage,double>> *undoStack ;//undostack ---> pair {image,labelsize}
+    QStack<QPair<QImage,double>> *redoStack ;
+
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;

@@ -5,32 +5,43 @@
 
 
 //---------------constructor-------------------------------------------------------
-MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), scaleFactor(1) /*btn_rotateLeft(new QPushButton), btn_rotateRight(new QPushButton)*/
+MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), scaleFactor(1), btn_rotateLeft(new QPushButton), btn_rotateRight(new QPushButton)
 {
+
+  factorSaved = 1.0;
   isZoomedIn = false;
   isZoomedOut = false;
   isCrop = false;
-  undoLabelSizes = new QStack<QSize>();
-  redoLabelSizes = new QStack<QSize>();
-  undoStack = new QStack<QImage>();
-  redoStack = new QStack<QImage>();
+  undoStack = new QStack<QPair<QImage,double>>();
+  redoStack = new QStack<QPair<QImage,double>>();
+
+  imageLabel->setMargin(10);
+  imageLabel->setStyleSheet("QLabel { background-color : black;  }");
+  imageLabel->setContentsMargins(1000,100,1000,100);
+  imageLabel->setScaledContents(true);
+  //imageLabel->setFrameRect(QRect(0,100,5000,100));
+
+  imageLabel->setMaximumHeight(1050);
+  imageLabel->setMaximumWidth(10000);
+  imageLabel->setMinimumHeight(100);
+  imageLabel->setMinimumWidth(1000);
+
   imageLabel->setBackgroundRole(QPalette::Base);
   imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
   imageLabel->setScaledContents(true);
+  imageLabel->setAlignment(Qt::AlignAbsolute)
+          ;
     scaleFactor = 1.0;
-
-
-
   scrollArea->setBackgroundRole(QPalette::Dark);
   scrollArea->setWidget(imageLabel);
   scrollArea->setVisible(false);
   setCentralWidget(scrollArea);
-
   createActions();
-
   resize(QGuiApplication::primaryScreen()->availableSize());
   //debug
   loadFile(tr("Pictures/Webcam/2016-09-16-204031.jpg"));
+
+
 }
 
 //-mouse select press,move,release-------------------------------------------------
@@ -64,14 +75,19 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *event){
   if(rubberBand){
       rubberBand->show();
    }
+
   if(isZoomedIn){
+      undoStack->push(qMakePair(image,factorSaved));
       zoomInHelper();
       isZoomedIn = false;
   }
-  else if (isCrop){
+  if (isCrop){
+      undoStack->push(qMakePair(image,factorSaved));
       cropHelper();
       isCrop = false;
   }
+  rubberBand->close();
+  rubberBand = NULL;
 }
 
 
@@ -135,7 +151,6 @@ void MainWindow::open(){
 //-------------setting image-----------------------------------------------------
 void MainWindow::setImage(const QImage &newImage){
 
-  undoStack->push(newImage);
   image = newImage;
   imageLabel->setPixmap(QPixmap::fromImage(image));
   scrollArea->setVisible(true);
@@ -178,25 +193,33 @@ void MainWindow::saveAs(){
 
 //-------------undo redo---------------------------------------------------------
 void MainWindow::undo(){
-    if(undoStack->size()<=1)
-           return;
 
-    redoStack->push(image);
-    undoStack->pop();
-    QImage popped= undoStack->pop();
-    setImage(popped);
+    if(undoStack->size()<=0)
+           return;
+    redoStack->push(qMakePair(image,factorSaved));
+    QPair<QImage,double>popped= undoStack->pop();
+    setImage(popped.first);
+
+    scaleImage(1/factorSaved);
+    factorSaved = popped.second;
+
 }
 
 void MainWindow::redo(){
     if(redoStack->size()==0)
            return;
-    QImage popped= redoStack->pop();
-    setImage(popped);
+    undoStack->push(qMakePair(image,factorSaved));
+    QPair<QImage,double>popped = redoStack->pop();
+    setImage(popped.first);
+    scaleImage(popped.second);
+    factorSaved = popped.second;
+
 
 }
 //-------------reset-------------------------------------------------------------
 void MainWindow::reset(){
     setImage(originalImage);
+
 }
 
 //-------------crop--------------------------------------------------------------
@@ -204,17 +227,15 @@ void MainWindow::crop(){
     isCrop = true;
 }
 void MainWindow::cropHelper(){
-    if(rubberBand){
+    delete redoStack;
+    redoStack= new QStack<QPair<QImage,double>>();
        QImage copy ;
-       double width = rubberBand->width();
+      double width = rubberBand->width();
        double height = rubberBand->height();
        int x = origin.rx();
        int y = origin.ry();
        copy = image.copy( x, y, width, height);
-       rubberBand->close();
        setImage(copy);
-
-    }
 }
 //-------------rotation----------------------------------------------------------
 void MainWindow::rotateAngle(){
@@ -230,11 +251,11 @@ void MainWindow::rotateAngle(){
                                                              max ,
                                                              decimals,
                                                                &ok,
-
                                                           Qt::WindowFlags());
 
      if(ok)
     {
+      undoStack->push(qMakePair(image,factorSaved));
       QTransform trans;
       trans.rotate(rotationAngle);
       image = image.transformed(trans);
@@ -243,26 +264,29 @@ void MainWindow::rotateAngle(){
 }
 
 void MainWindow::rotateLeft(){
+   undoStack->push(qMakePair(image,factorSaved));
+  QTransform trans;
+  trans.rotate(-90);
+  image = image.transformed(trans);
+  delete redoStack;
+  redoStack= new QStack<QPair<QImage,double>>();
+
+  setImage(image);
+}
+void MainWindow::rotateRight(){
+ undoStack->push(qMakePair(image,factorSaved));
   QTransform trans;
   trans.rotate(90);
   image = image.transformed(trans);
   delete redoStack;
-  redoStack= new QStack<QImage>();
-  setImage(image);
-}
+  redoStack= new QStack<QPair<QImage,double>>();
 
-void MainWindow::rotateRight(){
-  QTransform trans;
-  trans.rotate(270);
-  image = image.transformed(trans);
-  delete redoStack;
-  redoStack= new QStack<QImage>();
   setImage(image);
 }
 
 //---------------zoom-------------------------------------------------------------
 void MainWindow::zoomIn(){
-    isZoomedIn = true;
+       isZoomedIn = true;
 }
 void MainWindow::zoomOut(){
     zoomOutHelper();
@@ -270,11 +294,10 @@ void MainWindow::zoomOut(){
 
 void MainWindow::zoomInHelper(){
     //removing redo stack
+
     delete redoStack;
-    redoStack= new QStack<QImage>();
-    if(!rubberBand||image.isNull()){
-        return;
-    }
+    redoStack= new QStack<QPair<QImage,double>>();
+
     float pre_hor_val = scrollArea->horizontalScrollBar()->value();
     float pre_ver_val = scrollArea->verticalScrollBar()->value();
 
@@ -288,22 +311,14 @@ void MainWindow::zoomInHelper(){
     scrollArea->horizontalScrollBar()->setValue(pre_hor_val*1.25);
     scrollArea->verticalScrollBar()->setRange(std::min(origin.ry(),endOrigin.ry())+rubberBand->height()/2,imageLabel->height());
     scrollArea->verticalScrollBar()->setValue(pre_ver_val*1.25);
-    rubberBand->close();
-    rubberBand = NULL;
 
 
 }
 void MainWindow::zoomOutHelper(){
+    undoStack->push(qMakePair(image,factorSaved));
     delete redoStack;
-    redoStack= new QStack<QImage>();
-    scaleImage(1/1.25);
-    delete redoStack;
-    redoStack= new QStack<QImage>();
-    if(!rubberBand||image.isNull()){
-        return;
-    }
-    float pre_hor_val = scrollArea->horizontalScrollBar()->value();
-    float pre_ver_val = scrollArea->verticalScrollBar()->value();
+   redoStack= new QStack<QPair<QImage,double>>();
+
 
     scaleImage(1/1.25);
     scrollArea->setUpdatesEnabled(true);
@@ -311,12 +326,7 @@ void MainWindow::zoomOutHelper(){
     scrollArea->verticalScrollBar()->setUpdatesEnabled(true);
 
 
-    scrollArea->horizontalScrollBar()->setRange(std::min(origin.rx(),endOrigin.rx())+rubberBand->width()/2,imageLabel->width());
-    scrollArea->horizontalScrollBar()->setValue(pre_hor_val/1.25);
-    scrollArea->verticalScrollBar()->setRange(std::min(origin.ry(),endOrigin.ry())+rubberBand->height()/2,imageLabel->height());
-    scrollArea->verticalScrollBar()->setValue(pre_ver_val/1.25);
-    rubberBand->close();
-    rubberBand = NULL;
+
 }
 
 void MainWindow::fitScreen(){
@@ -398,6 +408,7 @@ void MainWindow::createActions(){
 }
 
 void MainWindow::updateActions(){
+
     saveAction->setEnabled(!image.isNull());
     zoomInAction->setEnabled(!image.isNull());
     zoomOutAction->setEnabled(!image.isNull());
@@ -405,9 +416,9 @@ void MainWindow::updateActions(){
 
 void MainWindow::scaleImage(double factor){
   Q_ASSERT(imageLabel->pixmap());
+  factorSaved = factor;
   scaleFactor *= factor;
   imageLabel->resize(scaleFactor * imageLabel->pixmap()->size());
-
   adjustScrollBar(scrollArea->horizontalScrollBar(), factor);
   adjustScrollBar(scrollArea->verticalScrollBar(), factor);
 
