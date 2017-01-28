@@ -105,12 +105,12 @@ static void initializeImageFileDialog(QFileDialog &dialog, QFileDialog::AcceptMo
         dialog.setDefaultSuffix("jpg");
 }
 void MainWindow::open(){
-    QFileDialog dialog(this, tr("Open File"));
-    initializeImageFileDialog(dialog, QFileDialog::AcceptOpen);
-    while (dialog.exec() == QDialog::Accepted && !loadFile(dialog.selectedFiles().first())) {}
-
-
-
+    QFileDialog dialog(this);
+    dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
+    dialog.setViewMode(QFileDialog::Detail);
+    QString fileName = QFileDialog::getOpenFileName(this,
+       tr("Open Images"), "/Pictures/Webcam/", tr("Image Files (*.png *.jpg *.bmp)"));
+    while (dialog.exec() == QDialog::Accepted && !loadFile(fileName)) {}
 }
 
 void MainWindow::setImage(const QImage &newImage){
@@ -146,10 +146,13 @@ bool MainWindow::saveFile(const QString &fileName)
 
 
 void MainWindow::saveAs(){
-    QFileDialog dialog(this, tr("Save File As"));
-    initializeImageFileDialog(dialog, QFileDialog::AcceptSave);
+  QFileDialog dialog(this);
+  dialog.setNameFilter(tr("Images (*.png *.bmp *.jpg)"));
+  dialog.setViewMode(QFileDialog::Detail);
+  QString fileName = QFileDialog::getOpenFileName(this,
+     tr("Save As Image"), "/Pictures/Webcam/", tr("Image Files (*.png *.jpg *.bmp)"));
 
-    while (dialog.exec() == QDialog::Accepted && !saveFile(dialog.selectedFiles().first())) {}
+    while (dialog.exec() == QDialog::Accepted && !saveFile(fileName)) {}
 
 }
 
@@ -234,12 +237,14 @@ void MainWindow::rotateRight(){
 void MainWindow::zoomIn(){
     delete redoStack;
     redoStack= new QStack<QImage>();
+    scaleImage(1.25);
 
 }
 
 void MainWindow::zoomOut(){
     delete redoStack;
     redoStack= new QStack<QImage>();
+    scaleImage(0.75);
 }
 
 void MainWindow::fitScreen(){
@@ -252,7 +257,9 @@ void MainWindow::about(){
     tr("<p> The <b>Image-Viewer</b> Developed by"
         "<br>"
         "Mohamed Sabra"
+        "<br>"
         "Ziad Hendawy"
+        "<br>"
         "Ahmed Sallam"
         "<br>"
         ));
@@ -339,5 +346,3 @@ void MainWindow::scaleImage(double factor){
 void MainWindow::adjustScrollBar(QScrollBar *scrollBar, double factor){
   scrollBar->setValue(int(factor * scrollBar->value() + ((factor - 1) * scrollBar->pageStep()/2)));
 }
-
-
