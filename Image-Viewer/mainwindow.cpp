@@ -12,26 +12,26 @@ MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), 
   isZoomedIn = false;
   isZoomedOut = false;
   isCrop = false;
+
   undoStack = new QStack<QPair<QImage,double>>();
   redoStack = new QStack<QPair<QImage,double>>();
 
-  imageLabel->setMargin(10);
+  //imageLabel->setMargin(10);
   imageLabel->setStyleSheet("QLabel { background-color : black;  }");
-  imageLabel->setContentsMargins(1000,100,1000,100);
+  //imageLabel->setContentsMargins(1000,100,1000,100);
   imageLabel->setScaledContents(true);
   //imageLabel->setFrameRect(QRect(0,100,5000,100));
 
-  imageLabel->setMaximumHeight(1050);
-  imageLabel->setMaximumWidth(2000);
-  imageLabel->setMinimumHeight(100);
-  imageLabel->setMinimumWidth(1000);
+  //imageLabel->setMaximumHeight(1000);
+  //imageLabel->setMaximumWidth(1500);
+  //imageLabel->setMinimumHeight(100);
+  //imageLabel->setMinimumWidth(200);
 
   imageLabel->setBackgroundRole(QPalette::Base);
   imageLabel->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-  imageLabel->setScaledContents(true);
-  imageLabel->setAlignment(Qt::AlignAbsolute)
-          ;
-    scaleFactor = 1.0;
+  imageLabel->setAlignment(Qt::AlignAbsolute);
+
+  scaleFactor = 1.0;
   scrollArea->setBackgroundRole(QPalette::Dark);
   scrollArea->setWidget(imageLabel);
   scrollArea->setVisible(false);
@@ -45,7 +45,8 @@ MainWindow::MainWindow() : imageLabel(new QLabel), scrollArea(new QScrollArea), 
 //-mouse select press,move,release-------------------------------------------------
 void MainWindow::mousePressEvent(QMouseEvent *event){
   event->accept();
-  origin = event->pos();
+
+  origin = event->pos();//imageLabel->mapFromGlobal(event->globalPos());
   if(rubberBand){
       rubberBand ->close();
       rubberBand = NULL;
@@ -55,12 +56,14 @@ void MainWindow::mousePressEvent(QMouseEvent *event){
     rubberBand->setGeometry(QRect(origin, QSize()));
     rubberBand->show();
   }
+  scrollArea->verticalScrollBar()->setEnabled(true);
+  scrollArea->horizontalScrollBar()->setEnabled(true);
 
 }
 
 void MainWindow::mouseMoveEvent(QMouseEvent *event){
   event->accept();
-  endOrigin = event->pos();
+
   if(rubberBand){
      rubberBand->setGeometry(QRect(origin, event->pos()).normalized());
      rubberBand->show();
@@ -70,6 +73,7 @@ void MainWindow::mouseMoveEvent(QMouseEvent *event){
 
 void MainWindow::mouseReleaseEvent(QMouseEvent *event){
   event->accept();
+  endOrigin = event->pos();//imageLabel->mapFromGlobal(event->globalPos());
   if(rubberBand){
       rubberBand->show();
    }
@@ -107,11 +111,13 @@ bool MainWindow::loadFile(const QString &fileName)
     setImage(newImage);
 
     setWindowFilePath(fileName);
-
+    widthBefore = newImage.width();
+    heightBefore = newImage.height();
     const QString message = tr("Opened \"%1\", %2x%3, Depth: %4")
         .arg(QDir::toNativeSeparators(fileName)).arg(image.width()).arg(image.height()).arg(image.depth());
     statusBar()->showMessage(message);
     return true;
+
 }
 
 
@@ -151,11 +157,10 @@ void MainWindow::setImage(const QImage &newImage){
 
   image = newImage;
   imageLabel->setPixmap(QPixmap::fromImage(image));
+ // imageLabel->setPixmap(QPixmap::fromImage(image).scaled(image.width()/2,image.height()/2,Qt::KeepAspectRatio));
   scrollArea->setVisible(true);
-  fitScreenAction->setEnabled(true);
   updateActions();
-  if (!fitScreenAction->isChecked())
-         imageLabel->adjustSize();
+  imageLabel->adjustSize();
 
 }
 
@@ -228,14 +233,44 @@ void MainWindow::cropHelper(){
     delete redoStack;
     redoStack= new QStack<QPair<QImage,double>>();
        QImage copy ;
-      double width = rubberBand->width();
-       double height = rubberBand->height();
-       int x = origin.rx();
-       int y = origin.ry();
-       copy = image.copy( x, y, width, height);
+       QPoint tmp1 = origin;
+       QPoint tmp2 = endOrigin;
+       int x1 =tmp1.x();
+       int x2 =tmp2.x();
+       int y1 = tmp1.y();
+       int y2 =tmp2.y();
+
+        copy = image.copy(std::min(x1,x2)+scrollArea->horizontalScrollBar()->value(),std::min(y1,y2)+scrollArea->verticalScrollBar()->value(),std::abs(tmp1.x()-tmp2.x()),std::abs(tmp1.y()-tmp2.y()));
+      // copy = image.copy(std::min(x1,x2),std::min(y1,y2),std::abs(tmp1.x()-tmp2.x()),std::abs(tmp1.y()-tmp2.y()));
+
        setImage(copy);
 }
 //-------------rotation----------------------------------------------------------
+void MainWindow::rotate(double rotationAngle){
+    QTransform trans;
+    QImage tmp;
+    trans.rotate(rotationAngle);
+    totalRotationAngle+=rotationAngle;
+    qDebug()<<totalRotationAngle;
+    if((int)totalRotationAngle %360 == 0){
+
+        image = originalImage;
+         cropAction->setEnabled(true);
+
+    }
+    else
+     {
+        qDebug()<<"kolo awleed";
+        image = image.transformed(trans);
+
+        cropAction->setEnabled(false);
+
+
+    }
+    setImage(image);
+
+
+}
 void MainWindow::rotateAngle(){
 
     bool ok;
@@ -254,17 +289,16 @@ void MainWindow::rotateAngle(){
      if(ok)
     {
       undoStack->push(qMakePair(image,factorSaved));
-      QTransform trans;
-      trans.rotate(rotationAngle);
-      image = image.transformed(trans);
-      setImage(image);
+      delete redoStack;
+      redoStack= new QStack<QPair<QImage,double>>();
+      rotate(rotationAngle);
     }
 }
 
 void MainWindow::rotateLeft(){
    undoStack->push(qMakePair(image,factorSaved));
   QTransform trans;
-  trans.rotate(-90);
+  trans.rotate(270);
   image = image.transformed(trans);
   delete redoStack;
   redoStack= new QStack<QPair<QImage,double>>();
@@ -365,41 +399,45 @@ void MainWindow::createActions(){
 
   undoAction = editeMenu->addAction(tr("&Undo"), this, &MainWindow::undo);
   undoAction->setShortcut(tr("Ctrl+Z"));
+  undoAction->setEnabled(false);
 
   redoAction = editeMenu->addAction(tr("&Redo"), this, &MainWindow::redo);
   redoAction->setShortcut(tr("Ctrl+Y"));
+  redoAction->setEnabled(false);
 
   resetAction = editeMenu->addAction(tr("&Reset"), this, &MainWindow::reset);
   resetAction->setShortcut(tr("Ctrl+F"));
+  resetAction->setEnabled(false);
 
   editeMenu->addSeparator();
 
   cropAction = editeMenu->addAction(tr("&Crop"), this, &MainWindow::crop);
   cropAction->setShortcut(tr("Ctrl+C"));
+  cropAction->setEnabled(false);
 
   editeMenu->addSeparator();
 
   rotateAngleAction = editeMenu->addAction(tr("&Rotate By Angle"),this,&MainWindow::rotateAngle);
+  rotateAngleAction->setEnabled(false);
 
   rotateLeftAction = editeMenu->addAction(tr("&Rotate Left by 90"), this, &MainWindow::rotateLeft);
   rotateLeftAction->setShortcut(tr("Ctrl+L"));
+  rotateLeftAction->setEnabled(false);
 
   rotateRightAction = editeMenu->addAction(tr("&Rotate Right by 90"), this, &MainWindow::rotateRight);
   rotateRightAction->setShortcut(tr("Ctrl+R"));
+  rotateRightAction->setEnabled(false);
 
   viewMenu = menuBar()->addMenu(tr("&View"));
 
-  zoomInAction = viewMenu->addAction(tr("Zoom &In (25%)"), this, &MainWindow::zoomIn);
+  zoomInAction = viewMenu->addAction(tr("Zoom &In"), this, &MainWindow::zoomIn);
   zoomInAction->setShortcut(QKeySequence::ZoomIn);
   zoomInAction->setEnabled(false);
 
-  zoomOutAction = viewMenu->addAction(tr("Zoom &Out (25%)"), this, &MainWindow::zoomOut);
+  zoomOutAction = viewMenu->addAction(tr("Zoom &Out"), this, &MainWindow::zoomOut);
   zoomOutAction->setShortcut(QKeySequence::ZoomOut);
   zoomOutAction->setEnabled(false);
 
-  fitScreenAction = editeMenu->addAction(tr("&Reset Zoom"), this, &MainWindow::fitScreen);
-  fitScreenAction->setShortcut(tr("Ctrl+0"));
-  fitScreenAction->setEnabled(false);
 
   helpMenu = menuBar()->addMenu(tr("&Help"));
   helpMenu->addAction(tr("&About"), this, &MainWindow::about);
@@ -408,20 +446,36 @@ void MainWindow::createActions(){
 void MainWindow::updateActions(){
 
     saveAction->setEnabled(!image.isNull());
+
     zoomInAction->setEnabled(!image.isNull());
     zoomOutAction->setEnabled(!image.isNull());
+
+    undoAction->setEnabled(!undoStack->isEmpty());
+    redoAction->setEnabled(!redoStack->isEmpty());
+
+    resetAction->setEnabled(!image.isNull());
+
+    rotateLeftAction->setEnabled(!image.isNull());
+    rotateRightAction->setEnabled(!image.isNull());
+    rotateAngleAction->setEnabled(!image.isNull());
+
+    cropAction->setEnabled(!image.isNull());
 }
 
 void MainWindow::scaleImage(double factor){
   Q_ASSERT(imageLabel->pixmap());
   factorSaved = factor;
   scaleFactor *= factor;
+  cropAction->setEnabled(scaleFactor==1);
   imageLabel->resize(scaleFactor * imageLabel->pixmap()->size());
   adjustScrollBar(scrollArea->horizontalScrollBar(), factor);
   adjustScrollBar(scrollArea->verticalScrollBar(), factor);
 
   zoomInAction->setEnabled(scaleFactor < 3.0);
   zoomOutAction->setEnabled(scaleFactor > 0.333);
+  undoAction->setEnabled(!undoStack->isEmpty());
+  redoAction->setEnabled(!redoStack->isEmpty());
+
 }
 
 void MainWindow::adjustScrollBar(QScrollBar *scrollBar, double factor){

@@ -8,6 +8,8 @@
 #include <QRect>
 #include <QRubberBand>
 #include <QPushButton>
+#include <QBoxLayout>
+
 class QAction;
 class QMenu;
 class QActionGroup;
@@ -62,6 +64,7 @@ private:
     void scaleImage(double factor);
     void adjustScrollBar(QScrollBar *scrollBar, double factor);
     void setImageLabel(QSize);
+    void rotate(double roationAngle);
 
     QPoint origin;
     QPoint endOrigin;
@@ -71,12 +74,16 @@ private:
     QScrollArea *scrollArea;
     QSize originalImageLabelSize;
 
+
     double scaleFactor;
     double factorSaved;
     bool click ;
     bool isZoomedIn;
     bool isZoomedOut;
     bool isCrop;
+    double totalRotationAngle;
+    double widthBefore;
+    double heightBefore;
 
     QRubberBand *rubberBand = NULL;
     QPoint myPoint;
